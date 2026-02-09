@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CrackTheCode.ca — Terminal</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Share+Tech+Mono&display=swap');
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:#0a0a0a;font-family:'Fira Code','Courier New',monospace;color:#00ff41}
+
+canvas#mx{position:fixed;inset:0;z-index:0;opacity:.05;pointer-events:none}
+
+#boot{position:fixed;inset:0;z-index:100;background:#000;display:flex;align-items:center;justify-content:center;flex-direction:column;font-family:'Share Tech Mono',monospace;transition:opacity .8s;padding:20px}
+#boot.gone{opacity:0;pointer-events:none}
+#btxt{color:#00ff41;font-size:12px;white-space:pre;line-height:1.5;text-shadow:0 0 8px rgba(0,255,65,.5);max-width:620px;width:100%;overflow:hidden}
+#bw{width:350px;max-width:80%;height:5px;background:#111;border:1px solid #00801f;border-radius:3px;margin-top:18px;overflow:hidden}
+#bf{height:100%;width:0;background:linear-gradient(90deg,#00801f,#00ff41);box-shadow:0 0 10px rgba(0,255,65,.5);transition:width .15s}
+
+#app{display:none;height:100vh;flex-direction:column;position:relative;z-index:1}
+#app.on{display:flex}
+
+.tb{display:flex;align-items:center;justify-content:space-between;padding:7px 14px;background:linear-gradient(180deg,#111,#0a0a0a);border-bottom:1px solid #1a3a1a;flex-shrink:0}
+.lg{display:flex;align-items:center;gap:8px}
+.li{width:28px;height:28px;border:2px solid #00ff41;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#00ff41;text-shadow:0 0 10px rgba(0,255,65,.5);box-shadow:0 0 10px rgba(0,255,65,.5);animation:lp 3s ease-in-out infinite;flex-shrink:0}
+@keyframes lp{0%,100%{box-shadow:0 0 10px rgba(0,255,65,.5)}50%{box-shadow:0 0 20px rgba(0,255,65,.6)}}
+.lt{font-family:'Share Tech Mono',monospace;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:#00cc33}
+.lt b{color:#00ff41;text-shadow:0 0 6px rgba(0,255,65,.5)}
+.sts{display:flex;gap:14px;font-size:10px;color:#555}
+.st{display:flex;align-items:center;gap:5px}
+.dot{width:5px;height:5px;border-radius:50%;display:inline-block;animation:bl 2s infinite}
+.dg{background:#00ff41;box-shadow:0 0 5px #00ff41}
+.dy{background:#ffd600;box-shadow:0 0 5px #ffd600}
+.dc{background:#00e5ff;box-shadow:0 0 5px #00e5ff}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:.3}}
+
+.bd{display:flex;flex:1;overflow:hidden}
+
+.sd{width:220px;background:#080808;border-right:1px solid #1a3a1a;flex-shrink:0;overflow-y:auto}
+.sd::-webkit-scrollbar{width:3px}.sd::-webkit-scrollbar-thumb{background:#00801f;border-radius:2px}
+.ss{padding:10px;border-bottom:1px solid #151515}
+.sst{font-size:8px;text-transform:uppercase;letter-spacing:2px;color:#444;margin-bottom:6px}
+.si{padding:5px 7px;font-size:10px;color:#666;cursor:pointer;border-radius:3px;transition:all .2s;display:flex;align-items:center;gap:6px;line-height:1.4}
+.si:hover{background:#111;color:#00ff41}
+.bg{font-size:7px;padding:1px 4px;border-radius:3px;margin-left:auto;font-weight:600;white-space:nowrap}
+.be{background:rgba(0,255,65,.1);color:#00ff41;border:1px solid rgba(0,255,65,.2)}
+.bm{background:rgba(255,214,0,.1);color:#ffd600;border:1px solid rgba(255,214,0,.2)}
+.bh{background:rgba(255,0,64,.1);color:#ff0040;border:1px solid rgba(255,0,64,.2)}
+.bx{background:rgba(179,136,255,.1);color:#b388ff;border:1px solid rgba(179,136,255,.2)}
+
+.ta{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.tw{flex:1;position:relative;overflow:hidden}
+.tw::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.06) 2px,rgba(0,0,0,.06) 4px);pointer-events:none;z-index:2}
+.tw::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 60%,rgba(0,0,0,.3) 100%);pointer-events:none;z-index:2}
+#tm{height:100%;overflow-y:auto;padding:14px;background:#050808;font-size:12px;line-height:1.65;scroll-behavior:smooth}
+#tm::-webkit-scrollbar{width:5px}
+#tm::-webkit-scrollbar-thumb{background:#00801f;border-radius:3px}
+#tm::-webkit-scrollbar-track{background:#0a0a0a}
+
+.cl{white-space:pre-wrap;word-break:break-all}
+.c0{color:#00ff41}.c1{color:#8fbc8f}.c2{color:#00e5ff}.c3{color:#ffd600}.c4{color:#ff0040}
+.c5{color:#00ff41;font-weight:600;text-shadow:0 0 6px rgba(0,255,65,.5)}
+.c6{color:#b388ff}.c7{color:#555;font-style:italic}.c8{color:#00cc33;font-size:10px;line-height:1.1}
+.c9{background:rgba(0,255,65,.04);border-left:3px solid #00ff41;padding:3px 10px;margin:3px 0;border-radius:0 4px 4px 0}
+.pu{color:#00e5ff}.pa{color:#555}.ph{color:#00ff41}.pd{color:#b388ff}.ps{color:#ff0040;font-weight:700}
+
+.ia{display:flex;align-items:center;padding:8px 14px;background:#080a08;border-top:1px solid #1a3a1a;flex-shrink:0;gap:6px}
+.prd{font-size:12px;white-space:nowrap;flex-shrink:0}
+#ci{flex:1;background:transparent;border:none;outline:none;color:#00ff41;font-family:'Fira Code','Courier New',monospace;font-size:12px;caret-color:#00ff41}
+#ci::placeholder{color:#2a2a2a}
+.hn{font-size:9px;color:#2a2a2a;white-space:nowrap}
+
+@media(max-width:768px){.sd{display:none}.lt{font-size:11px}}
+@media(max-width:480px){.sts{display:none}}
+</style>
+</head>
+<body>
+
+<canvas id="mx"></canvas>
+
+<div id="boot">
+  <div id="btxt"></div>
+  <div id="bw"><div id="bf"></div></div>
+</div>
+
+<div id="app">
+  <div class="tb">
+    <div class="lg">
+      <div class="li">⟨⟩</div>
+      <div class="lt"><b>Crack</b>TheCode<b>.ca</b></div>
+    </div>
+    <div class="sts">
+      <div class="st"><span class="dot dg"></span> Actif</div>
+      <div class="st"><span class="dot dy"></span> <span id="clk">00:00:00</span></div>
+      <div class="st"><span class="dot dc"></span> Chiffré</div>
+    </div>
+  </div>
+
+  <div class="bd">
+    <div class="sd">
+      <div class="ss">
+        <div class="sst">⬡ Modules</div>
+        <div class="si" data-c="help">📖 Aide & Commandes</div>
+        <div class="si" data-c="modules">🎯 Voir les modules</div>
+        <div class="si" data-c="challenge">🏆 Défis CTF</div>
+      </div>
+      <div class="ss">
+        <div class="sst">⬡ Réseau</div>
+        <div class="si" data-c="nmap 192.168.1.1">🔍 nmap <span class="bg be">Facile</span></div>
+        <div class="si" data-c="whois crackthecode.ca">🌐 whois <span class="bg be">Facile</span></div>
+        <div class="si" data-c="ping 8.8.8.8">📡 ping <span class="bg be">Facile</span></div>
+        <div class="si" data-c="traceroute google.com">🗺️ traceroute <span class="bg bm">Moyen</span></div>
+        <div class="si" data-c="dnslookup crackthecode.ca">📋 dnslookup <span class="bg bm">Moyen</span></div>
+        <div class="si" data-c="netstat">📊 netstat <span class="bg be">Facile</span></div>
+      </div>
+      <div class="ss">
+        <div class="sst">⬡ Sécurité</div>
+        <div class="si" data-c="crack hash password123">🔓 Crack Hash <span class="bg bm">Moyen</span></div>
+        <div class="si" data-c="exploit">💉 Exploits <span class="bg bh">Difficile</span></div>
+        <div class="si" data-c="bruteforce">🔨 Brute Force <span class="bg bh">Difficile</span></div>
+        <div class="si" data-c="sqlmap">💊 SQL Injection <span class="bg bh">Difficile</span></div>
+        <div class="si" data-c="xss">🌐 XSS <span class="bg bh">Difficile</span></div>
+        <div class="si" data-c="decrypt">🔐 Décryptage <span class="bg bx">Expert</span></div>
+      </div>
+      <div class="ss">
+        <div class="sst">⬡ Outils</div>
+        <div class="si" data-c="hashgen crackthecode">🔑 Hash Gen <span class="bg be">Facile</span></div>
+        <div class="si" data-c="encode CrackTheCode">📦 Base64 Encode <span class="bg be">Facile</span></div>
+        <div class="si" data-c="decode Q3JhY2tUaGVDb2Rl">📦 Base64 Decode <span class="bg be">Facile</span></div>
+      </div>
+      <div class="ss">
+        <div class="sst">⬡ Système</div>
+        <div class="si" data-c="sysinfo">🖥️ Infos système</div>
+        <div class="si" data-c="processes">⚙️ Processus</div>
+        <div class="si" data-c="ifconfig">📡 ifconfig</div>
+        <div class="si" data-c="ssh admin@192.168.1.100">🔗 SSH</div>
+        <div class="si" data-c="ls">📁 ls</div>
+        <div class="si" data-c="clear">🧹 Effacer</div>
+      </div>
+    </div>
+
+    <div class="ta">
+      <div class="tw">
+        <div id="tm"></div>
+      </div>
+      <div class="ia">
+        <div class="prd">
+          <span class="pu">hacker</span><span class="pa">@</span><span class="ph">crackthecode</span><span class="pd">:~</span><span class="ps">$</span>
+        </div>
+        <input type="text" id="ci" placeholder="Tape une commande... (help pour commencer)" autocomplete="off" spellcheck="false" autofocus>
+        <div class="hn">TAB ↹</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var T=document.getElementById('tm'),I=document.getElementById('ci'),boot=document.getElementById('boot'),bT=document.getElementById('btxt'),bB=document.getElementById('bf'),app=document.getElementById('app');
+var hist=[],hI=-1,sc=0,chA=null,qA=null;
+var sl=function(m){return new Promise(function(r){setTimeout(r,m)})};
+
+// Matrix
+var cv=document.getElementById('mx'),cx=cv.getContext('2d');
+function rz(){cv.width=innerWidth;cv.height=innerHeight}rz();
+var mc='アイウエオカキクケコサシスセソタチツテト0123456789ABCDEF{}[]<>/\\';
+var fs=14,co=Math.floor(cv.width/fs),dr=[];
+for(var i=0;i<co;i++)dr.push(1);
+function dM(){
+  cx.fillStyle='rgba(0,0,0,0.05)';
+  cx.fillRect(0,0,cv.width,cv.height);
+  cx.fillStyle='#00ff41';
+  cx.font=fs+'px monospace';
+  for(var i=0;i<dr.length;i++){
+    cx.fillText(mc[Math.floor(Math.random()*mc.length)],i*fs,dr[i]*fs);
+    if(dr[i]*fs>cv.height&&Math.random()>.975)dr[i]=0;
+    dr[i]++;
+  }
+}
+setInterval(dM,50);
+window.addEventListener('resize',function(){rz();co=Math.floor(cv.width/fs);dr=[];for(var i=0;i<co;i++)dr.push(1)});
+
+// Clock
+setInterval(function(){var e=document.getElementById('clk');if(e)e.textContent=new Date().toTimeString().split(' ')[0]},1000);
+
+// Helpers
+function pr(t,c){var d=document.createElement('div');d.className='cl '+(c||'');d.innerHTML=t;T.appendChild(d);T.scrollTop=T.scrollHeight}
+function prP(c){pr('<span class="pu">hacker</span><span class="pa">@</span><span class="ph">crackthecode</span><span class="pd">:~</span><span class="ps">$</span> '+esc(c),'c0')}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+async function prg(l,d){
+  d=d||2000;var id='p'+Date.now();
+  pr(l+' <span id="'+id+'" style="color:#ffd600">0%</span>','c1');
+  var el=document.getElementById(id);
+  for(var i=1;i<=20;i++){
+    await sl(d/20);
+    var b='\u2588'.repeat(i)+'\u2591'.repeat(20-i);
+    if(el)el.innerHTML='['+b+'] '+(i*5)+'%';
+  }
+}
+async function sH(s){
+  var d=new TextEncoder().encode(s);
+  var b=await crypto.subtle.digest('SHA-256',d);
+  return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');
+}
+
+// Boot
+var bMs=[
+  '[BIOS] CrackTheCode Terminal v4.2.0',
+  '[BOOT] Initialisation du noyau sécurisé...',
+  '[OK]   Chargement modules cryptographiques',
+  '[OK]   Réseau TOR initialisé — 3 noeuds',
+  '[OK]   Pare-feu configuré (mode offensif)',
+  '[OK]   Base de données CVE synchronisée',
+  '[OK]   Outils pentest chargés (nmap, hydra, john)',
+  '[OK]   Environnement sandbox activé',
+  '[WARN] Mode éducatif — Aucune cible réelle',
+  '',
+  '  \u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2557  \u2588\u2588\u2557',
+  ' \u2588\u2588\u2554\u2550\u2550\u2550\u2550\u255D\u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2554\u2550\u2550\u2550\u2550\u255D\u2588\u2588\u2551 \u2588\u2588\u2554\u255D',
+  ' \u2588\u2588\u2551     \u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255D\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2551\u2588\u2588\u2551     \u2588\u2588\u2588\u2588\u2588\u2554\u255D ',
+  ' \u2588\u2588\u2551     \u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2551\u2588\u2588\u2551     \u2588\u2588\u2554\u2550\u2588\u2588\u2557 ',
+  ' \u255A\u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2551  \u2588\u2588\u2551\u2588\u2588\u2551  \u2588\u2588\u2551\u255A\u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2551  \u2588\u2588\u2557',
+  '  \u255A\u2550\u2550\u2550\u2550\u2550\u255D\u255A\u2550\u255D  \u255A\u2550\u255D\u255A\u2550\u255D  \u255A\u2550\u255D \u255A\u2550\u2550\u2550\u2550\u2550\u255D\u255A\u2550\u255D  \u255A\u2550\u255D',
+  '        T H E   C O D E  .  C A',
+  '',
+  '[SYS]  Terminal prêt. Tapez "help" pour commencer.'
+];
+
+async function rBoot(){
+  for(var i=0;i<bMs.length;i++){
+    bT.textContent+=bMs[i]+'\n';
+    bB.style.width=((i+1)/bMs.length*100)+'%';
+    await sl(100+Math.random()*80);
+  }
+  await sl(700);
+  boot.classList.add('gone');
+  app.classList.add('on');
+  showW();
+  I.focus();
+}
+
+function showW(){
+  pr('\u250C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510','c2');
+  pr('\u2502  \uD83D\uDD12 CRACKTHECODE.CA \u2014 Terminal \u00C9ducatif v4.2  \u2502','c2');
+  pr('\u2502  Apprends les bases du hacking \u00E9thique !      \u2502','c2');
+  pr('\u2502  Tape "help" pour voir les commandes           \u2502','c2');
+  pr('\u2502  Tape "modules" pour les le\u00E7ons guid\u00E9es       \u2502','c2');
+  pr('\u2502  Tape "challenge" pour un d\u00E9fi CTF             \u2502','c2');
+  pr('\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518','c2');
+  pr('','');
+}
+
+// ═══════════════════════════
+// COMMANDS
+// ═══════════════════════════
+var C={};
+
+C.help=async function(){
+  pr('','');
+  pr('\u2550\u2550\u2550 \uD83D\uDCD6 COMMANDES DISPONIBLES \u2550\u2550\u2550','c2');
+  pr('','');
+  pr('\uD83C\uDF10 R\u00C9SEAU','c2');
+  pr('  nmap &lt;ip&gt;           Scanner de ports r\u00E9seau','c1');
+  pr('  ping &lt;host&gt;         Tester la connectivit\u00E9','c1');
+  pr('  whois &lt;domain&gt;      Info sur un domaine','c1');
+  pr('  traceroute &lt;host&gt;   Tracer le chemin r\u00E9seau','c1');
+  pr('  dnslookup &lt;host&gt;    R\u00E9solution DNS','c1');
+  pr('  netstat              Connexions actives','c1');
+  pr('','');
+  pr('\uD83D\uDD13 S\u00C9CURIT\u00C9','c2');
+  pr('  crack hash &lt;val&gt;    Cracker un hash MD5/SHA','c1');
+  pr('  bruteforce           Simulation brute force','c1');
+  pr('  exploit              Exploits CVE connus','c1');
+  pr('  sqlmap &lt;url&gt;        Injection SQL \u00E9ducative','c1');
+  pr('  xss                  Cross-Site Scripting','c1');
+  pr('  decrypt              D\u00E9chiffrement C\u00E9sar','c1');
+  pr('  hashgen &lt;text&gt;      G\u00E9n\u00E9rer un hash SHA-256','c1');
+  pr('  encode &lt;text&gt;       Encoder en Base64','c1');
+  pr('  decode &lt;b64&gt;        D\u00E9coder du Base64','c1');
+  pr('','');
+  pr('\uD83D\uDDA5\uFE0F SYST\u00C8ME','c2');
+  pr('  sysinfo              Infos syst\u00E8me','c1');
+  pr('  processes            Processus actifs','c1');
+  pr('  ifconfig             Config r\u00E9seau','c1');
+  pr('  ssh &lt;user@host&gt;     Connexion SSH simul\u00E9e','c1');
+  pr('  ls / cat / pwd       Navigation fichiers','c1');
+  pr('','');
+  pr('\uD83C\uDFAF APPRENTISSAGE','c2');
+  pr('  modules              Le\u00E7ons guid\u00E9es','c1');
+  pr('  challenge            D\u00E9fis CTF interactifs','c1');
+  pr('  glossaire            Termes cybersec','c1');
+  pr('  quiz                 Quiz de connaissances','c1');
+  pr('  score                Voir ton score','c1');
+  pr('  clear                Effacer le terminal','c1');
+};
+
+C.nmap=async function(a){
+  var t=a[0]||'192.168.1.1';
+  pr('\nStarting Nmap 7.94 ( https://nmap.org )','c1');
+  await prg('Scanning '+t,2500);
+  pr('\nNmap scan report for '+t,'c2');
+  pr('Host is up (0.0042s latency).','c1');
+  pr('','');
+  pr('PORT      STATE    SERVICE        VERSION','c2');
+  pr('22/tcp    open     ssh            OpenSSH 8.9p1','c5');
+  pr('80/tcp    open     http           Apache/2.4.54','c5');
+  pr('443/tcp   open     https          nginx/1.24.0','c5');
+  pr('3306/tcp  filtered mysql          MySQL 8.0','c3');
+  pr('8080/tcp  open     http-proxy     Squid 5.7','c5');
+  pr('8443/tcp  closed   https-alt','c4');
+  pr('\nOS detection: Linux 5.15 - 6.1','c1');
+  pr('Nmap done: 1 IP address (1 host up) scanned in 4.87s','c7');
+  pr('','');
+  pr('\uD83D\uDCDA LE\u00C7ON: Nmap est un scanner r\u00E9seau open-source.','c9');
+  pr('   \u2022 "open" = le port accepte des connexions','c9');
+  pr('   \u2022 "filtered" = bloqu\u00E9 par un pare-feu','c9');
+  pr('   \u2022 "closed" = accessible mais aucun service','c9');
+  pr('   \u2022 En pentest, on cherche les ports ouverts comme vecteurs d\'attaque','c9');
+  sc+=5;
+};
+
+C.ping=async function(a){
+  var h=a[0]||'8.8.8.8';
+  pr('\nPING '+h+' ('+h+') 56(84) bytes of data.','c1');
+  for(var i=1;i<=5;i++){
+    await sl(300+Math.random()*300);
+    pr('64 bytes from '+h+': icmp_seq='+i+' ttl=117 time='+(5+Math.random()*25).toFixed(1)+' ms','c5');
+  }
+  pr('\n--- '+h+' ping statistics ---','c2');
+  pr('5 packets transmitted, 5 received, 0% packet loss','c1');
+  pr('','');
+  pr('\uD83D\uDCDA LE\u00C7ON: Ping utilise ICMP pour tester la connectivit\u00E9.','c9');
+  pr('   \u2022 TTL (Time To Live) = nombre de sauts restants','c9');
+  pr('   \u2022 Ping \u00E9lev\u00E9 (>100ms) = connexion lente','c9');
+  pr('   \u2022 Certains serveurs bloquent le ping (pare-feu)','c9');
+  sc+=3;
+};
+
+C.whois=async function(a){
+  var d=a[0]||'crackthecode.ca';
+  await prg('Querying WHOIS database',1500);
+  pr('\n\u2550\u2550\u2550 WHOIS: '+d+' \u2550\u2550\u2550','c2');
+  pr('Domain Name: '+d.toUpperCase(),'c1');
+  pr('Registrar: CrackTheCode Registrar Inc.','c1');
+  pr('Created Date: 2024-01-15','c1');
+  pr('Expiry Date: 2027-01-15','c1');
+  pr('Status: clientTransferProhibited','c1');
+  pr('Nameservers:','c1');
+  pr('  ns1.webador.com','c5');
+  pr('  ns2.webador.com','c5');
+  pr('DNSSEC: unsigned','c3');
+  pr('','');
+  pr('\uD83D\uDCDA LE\u00C7ON: WHOIS r\u00E9v\u00E8le les infos d\'enregistrement d\'un domaine.','c9');
+  pr('   \u2022 Les hackers l\'utilisent pour la reconnaissance (OSINT)','c9');
+  pr('   \u2022 On peut trouver: propri\u00E9taire, emails, dates, serveurs DNS','c9');
+  pr('   \u2022 Beaucoup de domaines utilisent la protection WHOIS Privacy','c9');
+  sc+=3;
+};
+
+C.traceroute=async function(a){
+  var h=a[0]||'google.com';
+  pr('\ntraceroute to '+h+', 30 hops max, 60 byte packets','c1');
+  var hops=[['192.168.1.1','gateway'],['10.0.0.1','isp-router'],['72.14.215.69','core-switch.isp.net'],['* * *',''],['108.170.232.14','google-edge.net'],['142.250.80.46',h]];
+  for(var i=0;i<hops.length;i++){
+    await sl(500+Math.random()*300);
+    var t1=(2+Math.random()*15).toFixed(1);
+    var t2=(2+Math.random()*15).toFixed(1);
+    if(hops[i][0]==='* * *') pr(' '+(i+1)+'  * * * (Noeud masqu\u00E9)','c3');
+    else pr(' '+(i+1)+'  '+hops[i][0]+' ('+hops[i][1]+')  '+t1+'ms  '+t2+'ms','c1');
+  }
+  pr('','');
+  pr('\uD83D\uDCDA LE\u00C7ON: Traceroute montre chaque "saut" entre toi et la cible.','c9');
+  pr('   \u2022 Chaque ligne = un routeur travers\u00E9','c9');
+  pr('   \u2022 "* * *" = un routeur qui ne r\u00E9pond pas (s\u00E9curit\u00E9)','c9');
+  pr('   \u2022 Utile pour diagnostiquer des probl\u00E8mes r\u00E9seau','c9');
+  sc+=5;
+};
+
+C.dnslookup=async function(a){
+  var h=a[0]||'crackthecode.ca';
+  await prg('R\u00E9solution DNS',1200);
+  pr('\n\u2550\u2550\u2550 DNS Lookup: '+h+' \u2550\u2550\u2550','c2');
+  pr('A Record:     185.230.63.'+Math.floor(Math.random()*255),'c1');
+  pr('AAAA Record:  2001:0db8:85a3::'+Math.floor(Math.random()*9999),'c1');
+  pr('MX Record:    mail.'+h+' (Priority: 10)','c1');
+  pr('NS Records:   ns1.webador.com, ns2.webador.com','c1');
+  pr('TXT Record:   "v=spf1 include:_spf.google.com ~all"','c1');
+  pr('','');
+  pr('\uD83D\uDCDA LE\u00C7ON: Le DNS traduit les noms de domaine en adresses IP.','c9');
+  pr('   \u2022 A Record = adresse IPv4 du serveur','c9');
+  pr('   \u2022 MX Record = serveur de messagerie','c9');
+  pr('   \u2022 Les attaques DNS peuvent rediriger le trafic (DNS Spoofing)','c9');
+  sc+=5;
+};
+
+C.netstat=async function(){
+  pr('\nConnexions r\u00E9seau actives','c2');
+  pr('Proto  Local Address          Foreign Address        State','c2');
+  pr('tcp    0.0.0.0:22             0.0.0.0:*              LISTEN','c1');
+  pr('tcp    0.0.0.0:80             0.0.0.0:*              LISTEN','c1');
+  pr('tcp    0.0.0.0:443            0.0.0.0:*              LISTEN','c1');
+  pr('tcp    192.168.1.42:49320     142.250.80.46:443      ESTABLISHED','c5');
+  pr('tcp    192.168.1.42:49321     151.101.1.69:443       ESTABLISHED','c5');
+  pr('tcp    192.168.1.42:49322     104.244.42.1:443       TIME_WAIT','c3');
+  pr('','');
+  pr('\uD83D\uDCDA LE\u00C7ON: Netstat affiche toutes les connexions r\u00E9seau.','c9');
+  pr('   \u2022 LISTEN = en attente de connexions','c9');
+  pr('   \u2022 ESTABLISHED = connexion active','c9');
+  pr('   \u2022 Utile pour d\u00E9tecter des connexions suspectes (malware)','c9');
+  sc+=3;
+};
+
+C.crack=async function(a){
+  if(a[0]==='hash'&&a[1]){
+    var v=a[1];var h=await sH(v);
+    pr('\n\uD83D\uDD13 CrackTheCode Hash Cracker v2.1','c2');
+    pr('Target: '+v,'c1');
+    await prg('Attaque dictionnaire (rockyou.txt)',2500);
+    await prg('Rainbow table lookup',1500);
+    pr('\n\u2705 HASH CRACK\u00C9!','c5');
+    pr('R\u00E9sultat: "'+v+'" \u2192 SHA256: '+h.substring(0,32)+'...','c5');
+    pr('','');
+    pr('\uD83D\uDCDA LE\u00C7ON: Le cracking de hash est une technique fondamentale.','c9');
+    pr('   \u2022 MD5 et SHA1 sont consid\u00E9r\u00E9s FAIBLES','c9');
+    pr('   \u2022 Les rainbow tables = tables pr\u00E9-calcul\u00E9es de hash','c9');
+    pr('   \u2022 Bcrypt, Argon2 = algorithmes s\u00E9curis\u00E9s modernes (avec sel)','c9');
+    pr('   \u2022 Un "sel" (salt) rend chaque hash unique','c9');
+    sc+=10;
+  }else{pr('Usage: crack hash <valeur>','c3');pr('Exemple: crack hash password123','c7')}
+};
+
+C.hashgen=async function(a){
+  var t=a.join(' ')||'crackthecode';var h=await sH(t);
+  pr('\n\uD83D\uDD10 G\u00E9n\u00E9ration de hash pour: "'+t+'"','c2');
+  pr('MD5:    '+h.substring(0,32),'c1');
+  pr('SHA1:   '+h.substring(0,40),'c1');
+  pr('SHA256: '+h,'c1');
+  pr('','');
+  pr('\uD83D\uDCDA LE\u00C7ON: Un hash est une empreinte num\u00E9rique \u00E0 sens unique.','c9');
+  pr('   \u2022 M\u00EAme entr\u00E9e = toujours m\u00EAme hash','c9');
+  pr('   \u2022 Impossible de retrouver l\'original (th\u00E9oriquement)','c9');
+  sc+=5;
+};
+
+C.encode=async function(a){
+  var t=a.join(' ')||'CrackTheCode';
+  pr('\n\uD83D\uDCE6 Encodage Base64','c2');
+  pr('Texte:  '+t,'c1');
+  pr('Base64: '+btoa(t),'c5');
+  pr('','');
+  pr('\uD83D\uDCDA LE\u00C7ON: Base64 encode en texte ASCII.','c9');
+  pr('   \u2022 Ce n\'est PAS du chiffrement \u2014 c\'est r\u00E9versible','c9');
+  pr('   \u2022 Utilis\u00E9 dans les emails, URLs, tokens JWT','c9');
+  sc+=3;
+};
+
+C.decode=async function(a){
+  var b=a.join(' ');
+  try{
+    var d=atob(b);
+    pr('\n\uD83D\uDCE6 D\u00E9codage Base64','c2');
+    pr('Base64:  '+b,'c1');
+    pr('D\u00E9cod\u00E9: '+d,'c5');
+  }catch(e){
+    pr('\n\u274C Erreur: entr\u00E9e Base64 invalide','c4');
+    pr('Essaie: decode Q3JhY2tUaGVDb2Rl','c7');
+  }
+  sc+=3;
+};
+
+C.bruteforce=async function(){
+  pr('\n\uD83D\uDD28 Simulation Brute Force Attack','c2');
+  pr('Cible: admin@192.168.1.100 (SSH)','c1');
+  pr('Dictionnaire: rockyou.txt (14,341,564 passwords)\n','c1');
+  var att=[['password',0],['123456',0],['admin',0],['letmein',0],['qwerty',0],['dragon',0],['master',0],['Cr4ckTh3C0d3!',1]];
+  for(var i=0;i<att.length;i++){
+    await sl(300+Math.random()*400);
+    if(att[i][1]) pr('  [\u2713] Tentative: "'+att[i][0]+'" \u2192 ACC\u00C8S ACCORD\u00C9!','c5');
+    else pr('  [\u2717] Tentative: "'+att[i][0]+'" \u2192 Refus\u00E9','c4');
+  }
+  pr('\n\u2705 Mot de passe trouv\u00E9: "Cr4ckTh3C0d3!"','c5');
+  pr('','');
+  pr('\uD83D\uDCDA LE\u00C7ON: Le brute force teste tous les mots de passe possibles.','c9');
+  pr('   \u2022 C\'est LENT et d\u00E9tectable','c9');
+  pr('   \u2022 Protection: mots de passe longs + 2FA + rate limiting','c9');
+  pr('   \u2022 Outils r\u00E9els: Hydra, John the Ripper, Hashcat','c9');
+  sc+=10;
+};
+
+C.exploit=async function(){
+  pr('\n\uD83D\uDC89 Base de donn\u00E9es d\'exploits \u2014 Top vuln\u00E9rabilit\u00E9s','c2');
+  pr('','');
+  pr('  CVE-2024-3094  \u2502 XZ Utils Backdoor    \u2502 CRITIQUE  \u2502 Score: 10.0','c4');
+  pr('  CVE-2023-44487 \u2502 HTTP/2 Rapid Reset   \u2502 \u00C9LEV\u00C9     \u2502 Score: 7.5','c3');
+  pr('  CVE-2021-44228 \u2502 Log4Shell (Java)      \u2502 CRITIQUE  \u2502 Score: 10.0','c4');
+  pr('  CVE-2021-34527 \u2502 PrintNightmare        \u2502 CRITIQUE  \u2502 Score: 8.8','c4');
+  pr('  CVE-2017-0144  \u2502 EternalBlue (WannaCry)\u2502 CRITIQUE  \u2502 Score: 9.8','c4');
+  pr('','');
+  pr('\uD83D\uDCDA LE\u00C7ON: Les exploits utilisent des vuln\u00E9rabilit\u00E9s logicielles.','c9');
+  pr('   \u2022 CVE = Common Vulnerabilities and Exposures','c9');
+  pr('   \u2022 CVSS = score de gravit\u00E9 (0-10)','c9');
+  pr('   \u2022 Zero-day = vuln\u00E9rabilit\u00E9 sans correctif','c9');
+  pr('   \u2022 Responsible disclosure = signaler \u00E9thiquement','c9');
+  sc+=10;
+};
+
+C.sqlmap=async function(a){
+  var u=a[0]||'http://target.com/login.php?id=1';
+  pr('\n\uD83D\uDC89 SQLMap v1.8 \u2014 '+u,'c2');
+  await prg('Test des param\u00E8tres vuln\u00E9rables',2000);
+  pr('\n[*] Param\u00E8tre vuln\u00E9rable: id','c5');
+  pr('[*] Type: UNION-based blind SQL injection','c1');
+  pr('[*] Backend: MySQL 8.0','c1');
+  pr('','');
+  pr('Payload utilis\u00E9:','c2');
+  pr("  ' OR 1=1 -- -",'c3');
+  pr("  ' UNION SELECT username, password FROM users -- -",'c3');
+  pr('','');
+  pr('  \u250C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510','c1');
+  pr('  \u2502 id       \u2502 username     \u2502 password_hash    \u2502','c2');
+  pr('  \u251C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524','c1');
+  pr('  \u2502 1        \u2502 admin        \u2502 5f4dcc3b5aa765.. \u2502','c1');
+  pr('  \u2502 2        \u2502 user1        \u2502 e99a18c428cb38.. \u2502','c1');
+  pr('  \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518','c1');
+  pr('','');
+  pr('\uD83D\uDCDA LE\u00C7ON: L\'injection SQL manipule les requ\u00EAtes de base de donn\u00E9es.','c9');
+  pr('   \u2022 Vuln\u00E9rabilit\u00E9 web #1 selon OWASP','c9');
+  pr('   \u2022 Protection: prepared statements (requ\u00EAtes pr\u00E9par\u00E9es)','c9');
+  pr('   \u2022 JAMAIS concat\u00E9ner les entr\u00E9es utilisateur dans le SQL','c9');
+  sc+=15;
+};
+
+C.xss=async function(){
+  pr('\n\uD83C\uDF10 Cross-Site Scripting (XSS)','c2');
+  pr('','');
+  pr('Types de XSS:','c2');
+  pr('','');
+  pr('  1. XSS R\u00E9fl\u00E9chi (Reflected)','c3');
+  pr('     Payload: &lt;script&gt;alert(\'XSS\')&lt;/script&gt;','c1');
+  pr('     \u2192 Inject\u00E9 via URL, ex\u00E9cut\u00E9 1 fois','c1');
+  pr('','');
+  pr('  2. XSS Stock\u00E9 (Stored)','c3');
+  pr('     Payload: &lt;img src=x onerror="steal(document.cookie)"&gt;','c1');
+  pr('     \u2192 Sauvegard\u00E9 en BDD, ex\u00E9cut\u00E9 pour tous','c1');
+  pr('','');
+  pr('  3. XSS DOM-based','c3');
+  pr('     \u2192 Manipulation du DOM c\u00F4t\u00E9 client','c1');
+  pr('','');
+  pr('\uD83D\uDCDA LE\u00C7ON: Le XSS injecte du JavaScript malicieux.','c9');
+  pr('   \u2022 Protection: \u00E9chapper les entr\u00E9es + Content-Security-Policy','c9');
+  pr('   \u2022 Le XSS stock\u00E9 est le plus dangereux (persiste)','c9');
+  pr('   \u2022 Toujours sanitizer c\u00F4t\u00E9 serveur ET client','c9');
+  sc+=15;
+};
+
+C.decrypt=async function(){
+  var plain='CRACKTHECODE EST GENIAL';var sh=7;
+  var enc=plain.split('').map(function(c){return c>='A'&&c<='Z'?String.fromCharCode(((c.charCodeAt(0)-65+sh)%26)+65):c}).join('');
+  pr('\n\uD83D\uDD10 Message chiffr\u00E9 intercept\u00E9:','c2');
+  pr('  "'+enc+'"','c4');
+  pr('\nAnalyse fr\u00E9quentielle...','c1');
+  await prg('D\u00E9cryptage',2500);
+  pr('\nD\u00E9calage d\u00E9tect\u00E9: '+sh+' (chiffrement C\u00E9sar)','c1');
+  pr('\n\u2705 Message: "'+plain+'"','c5');
+  pr('','');
+  pr('\uD83D\uDCDA LE\u00C7ON: Le chiffrement C\u00E9sar d\u00E9cale chaque lettre.','c9');
+  pr('   \u2022 Seulement 25 possibilit\u00E9s \u2014 tr\u00E8s facile \u00E0 casser','c9');
+  pr('   \u2022 Aujourd\'hui: AES-256, RSA, ChaCha20','c9');
+  sc+=10;
+};
+
+C.ssh=async function(a){
+  var t=a[0]||'admin@192.168.1.100';
+  pr('\nConnexion SSH \u00E0 '+t+'...','c1');
+  await sl(800);
+  pr('ED25519 key fingerprint: SHA256:xR4j2K...mN8qP2','c3');
+  await sl(500);
+  pr('Password: ********','c1');
+  await sl(1000);
+  pr('\n\u2705 Connexion \u00E9tablie!','c5');
+  pr('Welcome to Ubuntu 22.04.3 LTS','c1');
+  pr('Last login: '+new Date().toUTCString(),'c1');
+  pr('','');
+  pr('\uD83D\uDCDA LE\u00C7ON: SSH = Secure Shell, port 22.','c9');
+  pr('   \u2022 Chiffrement asym\u00E9trique (cl\u00E9 publique/priv\u00E9e)','c9');
+  pr('   \u2022 Pr\u00E9f\u00E9rer l\'auth par cl\u00E9 plut\u00F4t que mot de passe','c9');
+  sc+=5;
+};
+
+C.sysinfo=async function(){
+  pr('\n\uD83D\uDDA5\uFE0F Informations Syst\u00E8me','c2');
+  pr('\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500','c7');
+  pr('OS:         Kali Linux 2024.4 (Rolling)','c1');
+  pr('Kernel:     6.6.9-amd64','c1');
+  pr('Hostname:   crackthecode-workstation','c1');
+  pr('User:       hacker (uid=1000)','c1');
+  pr('CPU:        AMD Ryzen 9 7950X (32) @ 5.760GHz','c1');
+  pr('GPU:        NVIDIA RTX 4090','c1');
+  pr('RAM:        63.7 GiB / 64.0 GiB','c1');
+  pr('Disk:       456G / 1.0T (45%)','c1');
+  pr('Network:    eth0: 192.168.1.42 | tun0: 10.10.14.7','c1');
+  pr('Uptime:     4 days, 7 hours','c1');
+};
+
+C.processes=async function(){
+  pr('\n\u2699\uFE0F Processus actifs','c2');
+  pr('PID    USER     CPU%  MEM%  COMMAND','c2');
+  pr('1337   hacker   45.2  12.1  hashcat --force -m 0','c3');
+  pr('2049   root     12.8   8.3  /usr/sbin/apache2','c1');
+  pr('3001   hacker    8.5   4.2  python3 exploit.py','c1');
+  pr('1024   root      5.1   2.8  /usr/bin/tor','c1');
+  pr('4096   hacker    3.7   6.1  burpsuite','c1');
+  pr('512    root      2.9   1.5  sshd: hacker@pts/0','c1');
+  pr('768    root      1.8   0.9  /usr/sbin/openvpn','c1');
+  pr('2048   hacker    1.2   3.4  wireshark','c1');
+};
+
+C.ifconfig=async function(){
+  pr('\n\uD83D\uDCE1 Configuration r\u00E9seau','c2');
+  pr('','');
+  pr('eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>','c1');
+  pr('      inet 192.168.1.42  netmask 255.255.255.0','c5');
+  pr('      ether 08:00:27:4e:66:a1','c1');
+  pr('','');
+  pr('tun0: flags=4305<UP,POINTOPOINT,RUNNING>','c1');
+  pr('      inet 10.10.14.7  netmask 255.255.254.0','c5');
+  pr('      VPN: HackTheBox','c2');
+  pr('','');
+  pr('lo:   inet 127.0.0.1','c1');
+};
+
+C.ls=async function(){
+  pr('\n\uD83D\uDCC1 /home/hacker/','c2');
+  pr('drwxr-xr-x  Documents/','c6');
+  pr('drwxr-xr-x  exploits/','c6');
+  pr('drwxr-xr-x  wordlists/','c6');
+  pr('drwxr-xr-x  scripts/','c6');
+  pr('-rw-r--r--  notes.txt','c1');
+  pr('-rwxr-xr-x  scanner.py','c5');
+  pr('-rw-r--r--  targets.csv','c1');
+  pr('-rw-------  .ssh/id_rsa','c4');
+};
+
+C.cat=async function(a){
+  pr('\n\uD83D\uDCC4 notes.txt','c2');
+  pr('\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550','c7');
+  pr('# Notes de Pentest \u2014 CrackTheCode','c1');
+  pr('','');
+  pr('## M\u00E9thodologie:','c1');
+  pr('1. Reconnaissance (OSINT, nmap, whois)','c1');
+  pr('2. Scanning (ports, services, vuln\u00E9rabilit\u00E9s)','c1');
+  pr('3. Exploitation (Metasploit, scripts custom)','c1');
+  pr('4. Post-exploitation (persistence, pivot)','c1');
+  pr('5. Rapport (documentation)','c1');
+  pr('','');
+  pr('\u26A0\uFE0F Rappel: Toujours avoir une autorisation \u00E9crite!','c3');
+};
+
+C.pwd=async function(){pr('/home/hacker','c1')};
+
+C.modules=async function(){
+  pr('\n\uD83C\uDFAF MODULES D\'APPRENTISSAGE','c2');
+  pr('\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550','c2');
+  pr('','');
+  pr(' Module 1: Reconnaissance & OSINT       [Facile]','c5');
+  pr('   \u2192 nmap, whois, dnslookup, ping, traceroute','c1');
+  pr('','');
+  pr(' Module 2: Analyse vuln\u00E9rabilit\u00E9s       [Moyen]','c3');
+  pr('   \u2192 exploit, netstat, processes','c1');
+  pr('','');
+  pr(' Module 3: Cryptographie                [Moyen]','c3');
+  pr('   \u2192 crack hash, hashgen, encode, decode, decrypt','c1');
+  pr('','');
+  pr(' Module 4: Attaques Web                 [Difficile]','c4');
+  pr('   \u2192 sqlmap, xss, bruteforce','c1');
+  pr('','');
+  pr(' Module 5: D\u00E9fis CTF                    [Expert]','c6');
+  pr('   \u2192 challenge','c1');
+  pr('','');
+  pr('\uD83D\uDCA1 Tape la commande correspondante pour explorer.','c7');
+};
+
+var chs=[
+  {q:'\uD83C\uDFC6 D\u00C9FI 1: D\u00E9code ce Base64: "Q3JhY2tUaGVDb2RlIQ=="',a:'crackthecode!',h:'Utilise la commande: decode Q3JhY2tUaGVDb2RlIQ=='},
+  {q:'\uD83C\uDFC6 D\u00C9FI 2: Quel port par d\u00E9faut pour SSH?',a:'22',h:'C\'est un nombre entre 1 et 100.'},
+  {q:'\uD83C\uDFC6 D\u00C9FI 3: Quel type d\'attaque teste tous les mots de passe?',a:'brute force',h:'Ca implique la "force"...'},
+  {q:'\uD83C\uDFC6 D\u00C9FI 4: Vuln\u00E9rabilit\u00E9 web #1 OWASP? (2 mots, anglais)',a:'sql injection',h:'Li\u00E9 aux bases de donn\u00E9es...'},
+  {q:'\uD83C\uDFC6 D\u00C9FI 5: CVE-2021-44228 = quel nom? (journal en feu)',a:'log4shell',h:'Log4j + Shell = ?'}
+];
+
+C.challenge=async function(){
+  var c=chs[Math.floor(Math.random()*chs.length)];
+  chA=c;
+  pr('\n'+c.q,'c3');
+  pr('\nTape ta r\u00E9ponse. "hint" pour un indice.','c7');
+};
+
+C.glossaire=async function(){
+  pr('\n\uD83D\uDCD6 GLOSSAIRE CYBERS\u00C9CURIT\u00C9','c2');
+  pr('\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550','c2');
+  var terms=[
+    ['Pentest','Test d\'intrusion autoris\u00E9'],
+    ['CVE','Common Vulnerabilities and Exposures'],
+    ['OSINT','Renseignement \u00E0 partir de donn\u00E9es publiques'],
+    ['Zero-Day','Vuln\u00E9rabilit\u00E9 sans correctif'],
+    ['Payload','Code ex\u00E9cut\u00E9 apr\u00E8s exploitation'],
+    ['Backdoor','Porte d\u00E9rob\u00E9e'],
+    ['Phishing','Faux sites/emails pour voler des identifiants'],
+    ['MitM','Interception de communications'],
+    ['DoS/DDoS','Surcharge de serveur'],
+    ['RAT','Cheval de Troie d\'acc\u00E8s \u00E0 distance'],
+    ['CTF','Capture The Flag'],
+    ['2FA/MFA','Authentification multi-facteurs'],
+    ['VPN','Tunnel chiffr\u00E9']
+  ];
+  for(var i=0;i<terms.length;i++){
+    pr('  <span style="color:#00e5ff;font-weight:600">'+terms[i][0]+'</span>: '+terms[i][1],'c1');
+  }
+};
+
+var quizQs=[
+  {q:'Quel protocole utilise le port 443?',c:['A) HTTP','B) HTTPS','C) FTP','D) SSH'],a:'b'},
+  {q:'Quel outil scanne les ports r\u00E9seau?',c:['A) Photoshop','B) Wireshark','C) Nmap','D) Excel'],a:'c'},
+  {q:'Que signifie OSINT?',c:['A) Online Security Intel','B) Open Source Intelligence','C) OS Interface','D) Offensive Security'],a:'b'},
+  {q:'Quel algorithme de hash est faible?',c:['A) AES-256','B) Bcrypt','C) MD5','D) Argon2'],a:'c'},
+  {q:'Que fait une attaque DDoS?',c:['A) Vole des mots de passe','B) Chiffre les fichiers','C) Surcharge un serveur','D) Intercepte le trafic'],a:'c'}
+];
+
+C.quiz=async function(){
+  var q=quizQs[Math.floor(Math.random()*quizQs.length)];
+  qA=q;
+  pr('\n\uD83D\uDCDD QUIZ CYBERS\u00C9CURIT\u00C9','c2');
+  pr('\n'+q.q,'c3');
+  for(var i=0;i<q.c.length;i++) pr('  '+q.c[i],'c1');
+  pr('\nTape a, b, c ou d','c7');
+};
+
+C.score=async function(){
+  var r='D\u00E9butant \uD83C\uDF31';
+  if(sc>=100)r='Expert \uD83D\uDD25';
+  else if(sc>=60)r='Avanc\u00E9 \u26A1';
+  else if(sc>=30)r='Interm\u00E9diaire \uD83D\uDCA1';
+  pr('\n\uD83C\uDFC5 Ton score: '+sc+' points','c5');
+  pr('Rang: '+r,'c2');
+  pr('Continue \u00E0 explorer les commandes pour gagner des points!','c7');
+};
+
+C.clear=async function(){T.innerHTML=''};
+
+C.matrix=async function(){
+  for(var i=0;i<15;i++){
+    var l='';for(var j=0;j<60;j++)l+=mc[Math.floor(Math.random()*mc.length)];
+    pr(l,'c8');await sl(40);
+  }
+  pr('\nWake up, Neo... The Matrix has you.','c5');
+  sc+=5;
+};
+
+C.about=async function(){
+  pr('\n\u27E8\u27E9 CrackTheCode.ca','c2');
+  pr('Terminal de hacking \u00E9ducatif','c1');
+  pr('\n\u26A0\uFE0F Le hacking sans autorisation est ill\u00E9gal.','c3');
+};
+
+// Aliases & autocomplete
+var ali={dns:'dnslookup',ip:'ifconfig',dir:'ls',ps:'processes',top:'processes',systeminfo:'sysinfo'};
+var ac=['help','nmap','ping','whois','traceroute','dnslookup','netstat','crack hash','bruteforce','exploit','sqlmap','xss','decrypt','hashgen','encode','decode','ssh','sysinfo','processes','ifconfig','ls','cat','pwd','modules','challenge','glossaire','quiz','score','clear','matrix','about'];
+
+// Input handler
+I.addEventListener('keydown',async function(e){
+  if(e.key==='Enter'){
+    var raw=I.value.trim();if(!raw)return;I.value='';
+    hist.push(raw);hI=hist.length;
+    prP(raw);
+
+    // Challenge mode
+    if(chA){
+      if(raw.toLowerCase()==='hint'){pr(chA.h,'c3');return}
+      if(raw.toLowerCase()===chA.a){pr('\n\uD83C\uDF89 CORRECT! Bien jou\u00E9!','c5');sc+=20;pr('+20 points! Score: '+sc,'c5');chA=null}
+      else pr('\u274C Incorrect. R\u00E9essaie ou tape "hint".','c4');
+      return;
+    }
+    // Quiz mode
+    if(qA){
+      if(raw.toLowerCase()===qA.a){pr('\n\u2705 Bonne r\u00E9ponse!','c5');sc+=10;pr('+10 points! Score: '+sc,'c5')}
+      else pr('\u274C Mauvaise r\u00E9ponse. C\'\u00E9tait: '+qA.a.toUpperCase(),'c4');
+      qA=null;return;
+    }
+
+    var p=raw.split(/\s+/);var cmd=p[0].toLowerCase();var ar=p.slice(1);
+
+    if(C[cmd])await C[cmd](ar);
+    else if(ali[cmd]&&C[ali[cmd]])await C[ali[cmd]](ar);
+    else if(cmd==='hint')pr('Pas de d\u00E9fi en cours. Tape "challenge".','c7');
+    else if(cmd==='sudo'){pr('\n[sudo] Nice try \uD83D\uDE0F Tu n\'es pas root ici!','c3');pr('+5 points pour avoir essay\u00E9.','c5');sc+=5}
+    else if(cmd==='rm')pr('\n\uD83D\uDCA5 rm -rf / \u2014 Le terminal est prot\u00E9g\u00E9! \uD83D\uDE04','c3');
+    else if(cmd==='exit'||cmd==='quit')pr('\nTu es pi\u00E9g\u00E9(e)... pour toujours! \uD83D\uDE08','c3');
+    else{pr('\ncommand not found: '+esc(cmd),'c4');pr('Tape "help" pour les commandes.','c7')}
+  }
+  if(e.key==='ArrowUp'){e.preventDefault();if(hI>0){hI--;I.value=hist[hI]}}
+  if(e.key==='ArrowDown'){e.preventDefault();if(hI<hist.length-1){hI++;I.value=hist[hI]}else{hI=hist.length;I.value=''}}
+  if(e.key==='Tab'){e.preventDefault();var v=I.value.toLowerCase();if(v){var m=ac.find(function(x){return x.startsWith(v)});if(m)I.value=m}}
+});
+
+// Sidebar clicks
+document.querySelectorAll('.si[data-c]').forEach(function(el){
+  el.addEventListener('click',function(){
+    I.value=el.getAttribute('data-c');
+    I.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter'}));
+  });
+});
+
+document.querySelector('.tw').addEventListener('click',function(){I.focus()});
+
+rBoot();
+</script>
+</body>
+</html>
