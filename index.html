@@ -13,11 +13,11 @@ canvas#mx{position:fixed;inset:0;z-index:0;opacity:.05;pointer-events:none}
 
 #boot{position:fixed;inset:0;z-index:100;background:#000;display:flex;align-items:center;justify-content:center;flex-direction:column;font-family:'Share Tech Mono',monospace;transition:opacity .8s;padding:20px}
 #boot.gone{opacity:0;pointer-events:none}
-#btxt{color:#00ff41;font-size:12px;white-space:pre;line-height:1.5;text-shadow:0 0 8px rgba(0,255,65,.5);max-width:620px;width:100%;overflow:hidden}
+#btxt{color:#00ff41;font-size:12px;white-space:pre;line-height:1.5;text-shadow:0 0 8px rgba(0,255,65,.5);max-width:620px;width:100%;overflow-x:auto;overflow-y:hidden}
 #bw{width:350px;max-width:80%;height:5px;background:#111;border:1px solid #00801f;border-radius:3px;margin-top:18px;overflow:hidden}
 #bf{height:100%;width:0;background:linear-gradient(90deg,#00801f,#00ff41);box-shadow:0 0 10px rgba(0,255,65,.5);transition:width .15s}
 
-#app{display:none;height:100vh;flex-direction:column;position:relative;z-index:1}
+#app{display:none;height:100vh;height:100dvh;flex-direction:column;position:relative;z-index:1}
 #app.on{display:flex}
 
 .tb{display:flex;align-items:center;justify-content:space-between;padding:7px 14px;background:linear-gradient(180deg,#111,#0a0a0a);border-bottom:1px solid #1a3a1a;flex-shrink:0}
@@ -57,7 +57,7 @@ canvas#mx{position:fixed;inset:0;z-index:0;opacity:.05;pointer-events:none}
 #tm::-webkit-scrollbar-thumb{background:#00801f;border-radius:3px}
 #tm::-webkit-scrollbar-track{background:#0a0a0a}
 
-.cl{white-space:pre-wrap;word-break:break-all}
+.cl{white-space:pre-wrap;word-break:break-all;overflow-wrap:break-word}
 .c0{color:#00ff41}.c1{color:#8fbc8f}.c2{color:#00e5ff}.c3{color:#ffd600}.c4{color:#ff0040}
 .c5{color:#00ff41;font-weight:600;text-shadow:0 0 6px rgba(0,255,65,.5)}
 .c6{color:#b388ff}.c7{color:#555;font-style:italic}.c8{color:#00cc33;font-size:10px;line-height:1.1}
@@ -70,8 +70,45 @@ canvas#mx{position:fixed;inset:0;z-index:0;opacity:.05;pointer-events:none}
 #ci::placeholder{color:#2a2a2a}
 .hn{font-size:9px;color:#2a2a2a;white-space:nowrap}
 
-@media(max-width:768px){.sd{display:none}.lt{font-size:11px}}
-@media(max-width:480px){.sts{display:none}}
+/* Hamburger button - hidden on desktop */
+.hb{display:none;background:none;border:1px solid #1a3a1a;color:#00ff41;font-size:20px;cursor:pointer;padding:4px 8px;border-radius:4px;flex-shrink:0;line-height:1;z-index:10}
+.hb:active{background:#111}
+
+/* Mobile overlay for sidebar */
+.sd-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50}
+.sd-overlay.open{display:block}
+
+@media(max-width:768px){
+  .hb{display:block}
+  .sd{position:fixed;left:-260px;top:0;bottom:0;width:250px;z-index:60;transition:left .3s ease;overflow-y:auto;border-right:1px solid #00801f;background:#080808}
+  .sd.open{left:0}
+  .si{padding:10px 10px;font-size:12px;min-height:40px}
+  .lt{font-size:11px}
+  .ia{padding:8px 10px;gap:4px}
+  #ci{font-size:16px}/* prevents iOS zoom on focus */
+  .prd{font-size:11px}
+  .hn{display:none}
+  #tm{padding:10px;font-size:11px}
+  .cl{font-size:11px}
+  #btxt{font-size:9px;max-width:100%;overflow-x:hidden}
+  #bw{width:80%;max-width:300px}
+  .c9{padding:2px 6px;font-size:10px}
+}
+@media(max-width:480px){
+  .sts{display:none}
+  .lt{font-size:10px}
+  #tm{padding:8px;font-size:10px}
+  .cl{font-size:10px}
+  #btxt{font-size:7px;line-height:1.3}
+  .prd{font-size:10px}
+  .ia{padding:6px 8px}
+  .c9{font-size:9px}
+}
+@media(max-width:360px){
+  #btxt{font-size:6px}
+  .li{width:22px;height:22px;font-size:11px}
+  .lt{font-size:9px}
+}
 </style>
 </head>
 <body>
@@ -86,6 +123,7 @@ canvas#mx{position:fixed;inset:0;z-index:0;opacity:.05;pointer-events:none}
 <div id="app">
   <div class="tb">
     <div class="lg">
+      <button class="hb" id="hbtn" aria-label="Menu">☰</button>
       <div class="li">⟨⟩</div>
       <div class="lt"><b>Crack</b>TheCode<b>.ca</b></div>
     </div>
@@ -97,7 +135,8 @@ canvas#mx{position:fixed;inset:0;z-index:0;opacity:.05;pointer-events:none}
   </div>
 
   <div class="bd">
-    <div class="sd">
+    <div class="sd-overlay" id="sdov"></div>
+    <div class="sd" id="sidebar">
       <div class="ss">
         <div class="sst">⬡ Modules</div>
         <div class="si" data-c="help">📖 Aide & Commandes</div>
@@ -226,9 +265,21 @@ var bMs=[
 ];
 
 async function rBoot(){
-  for(var i=0;i<bMs.length;i++){
-    bT.textContent+=bMs[i]+'\n';
-    bB.style.width=((i+1)/bMs.length*100)+'%';
+  var msgs=bMs;
+  // On mobile, replace wide ASCII art with simpler text
+  if(window.innerWidth<=480){
+    msgs=[];
+    for(var i=0;i<bMs.length;i++){
+      if(bMs[i].indexOf('\u2588')!==-1 || bMs[i].indexOf('T H E')!==-1) continue;
+      msgs.push(bMs[i]);
+    }
+    // Insert simple banner before the last SYS line
+    msgs.splice(msgs.length-1,0,'  ⟨⟩ C R A C K T H E C O D E . C A');
+    msgs.splice(msgs.length-1,0,'');
+  }
+  for(var i=0;i<msgs.length;i++){
+    bT.textContent+=msgs[i]+'\n';
+    bB.style.width=((i+1)/msgs.length*100)+'%';
     await sl(100+Math.random()*80);
   }
   await sl(700);
@@ -239,13 +290,24 @@ async function rBoot(){
 }
 
 function showW(){
-  pr('\u250C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510','c2');
-  pr('\u2502  \uD83D\uDD12 CRACKTHECODE.CA \u2014 Terminal \u00C9ducatif v4.2  \u2502','c2');
-  pr('\u2502  Apprends les bases du hacking \u00E9thique !      \u2502','c2');
-  pr('\u2502  Tape "help" pour voir les commandes           \u2502','c2');
-  pr('\u2502  Tape "modules" pour les le\u00E7ons guid\u00E9es       \u2502','c2');
-  pr('\u2502  Tape "challenge" pour un d\u00E9fi CTF             \u2502','c2');
-  pr('\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518','c2');
+  if(window.innerWidth<=480){
+    pr('🔒 CRACKTHECODE.CA — Terminal Éducatif v4.2','c2');
+    pr('','');
+    pr('Apprends les bases du hacking éthique!','c2');
+    pr('','');
+    pr('→ "help" pour les commandes','c1');
+    pr('→ "modules" pour les leçons','c1');
+    pr('→ "challenge" pour un défi CTF','c1');
+    pr('→ ☰ pour le menu latéral','c1');
+  }else{
+    pr('┌─────────────────────────────────────────────────┐','c2');
+    pr('│  🔒 CRACKTHECODE.CA — Terminal Éducatif v4.2  │','c2');
+    pr('│  Apprends les bases du hacking éthique !      │','c2');
+    pr('│  Tape "help" pour voir les commandes           │','c2');
+    pr('│  Tape "modules" pour les leçons guidées       │','c2');
+    pr('│  Tape "challenge" pour un défi CTF             │','c2');
+    pr('└─────────────────────────────────────────────────┘','c2');
+  }
   pr('','');
 }
 
@@ -802,14 +864,38 @@ I.addEventListener('keydown',async function(e){
 });
 
 // Sidebar clicks
+var sidebar=document.getElementById('sidebar');
+var sdov=document.getElementById('sdov');
+var hbtn=document.getElementById('hbtn');
+
+function toggleSidebar(){
+  sidebar.classList.toggle('open');
+  sdov.classList.toggle('open');
+}
+function closeSidebar(){
+  sidebar.classList.remove('open');
+  sdov.classList.remove('open');
+}
+
+hbtn.addEventListener('click',toggleSidebar);
+sdov.addEventListener('click',closeSidebar);
+
 document.querySelectorAll('.si[data-c]').forEach(function(el){
   el.addEventListener('click',function(){
     I.value=el.getAttribute('data-c');
     I.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter'}));
+    closeSidebar();
   });
 });
 
 document.querySelector('.tw').addEventListener('click',function(){I.focus()});
+
+// Mobile: scroll input into view when keyboard opens
+I.addEventListener('focus',function(){
+  if(window.innerWidth<=768){
+    setTimeout(function(){I.scrollIntoView({block:'nearest',behavior:'smooth'})},300);
+  }
+});
 
 rBoot();
 </script>
